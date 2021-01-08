@@ -435,6 +435,7 @@ NSString * const ID = @"SDCycleScrollViewCell";
     int currentIndex = [self currentIndex];
     int targetIndex = currentIndex + 1;
     [self scrollToIndex:targetIndex];
+    [self scrollViewWillScrollingAnimation];
 }
 
 - (void)scrollToIndex:(int)targetIndex
@@ -460,6 +461,27 @@ NSString * const ID = @"SDCycleScrollViewCell";
         index = (_mainView.contentOffset.x + _flowLayout.itemSize.width * 0.5) / _flowLayout.itemSize.width;
     } else {
         index = (_mainView.contentOffset.y + _flowLayout.itemSize.height * 0.5) / _flowLayout.itemSize.height;
+    }
+    
+    return MAX(0, index);
+}
+- (int)willCurrentIndex
+{
+    if (_mainView.sd_width == 0 || _mainView.sd_height == 0) {
+        return 0;
+    }
+    
+    int index = 0;
+    if (_flowLayout.scrollDirection == UICollectionViewScrollDirectionHorizontal) {
+        index = (_mainView.contentOffset.x + _flowLayout.itemSize.width * 0.5) / _flowLayout.itemSize.width;
+        if ((long int)(_mainView.contentOffset.x + _flowLayout.itemSize.width/2) % (long int)_flowLayout.itemSize.width > 0) {
+            index++;
+        }
+    } else {
+        index = (_mainView.contentOffset.y + _flowLayout.itemSize.height * 0.5) / _flowLayout.itemSize.height;
+        if ((long int)(_mainView.contentOffset.y + _flowLayout.itemSize.height * 0.5) % (long int)_flowLayout.itemSize.height > 0) {
+            index++;
+        }
     }
     
     return MAX(0, index);
@@ -683,7 +705,17 @@ NSString * const ID = @"SDCycleScrollViewCell";
         self.itemDidScrollOperationBlock(indexOnPageControl);
     }
 }
-
+- (void)scrollViewWillScrollingAnimation
+{
+    if (!self.imagePathsGroup.count) return; // 解决清除timer时偶尔会出现的问题
+    int itemIndex = [self willCurrentIndex];
+    int indexOnPageControl = [self pageControlIndexWithCurrentCellIndex:itemIndex];
+    if ([self.delegate respondsToSelector:@selector(cycleScrollView:willScrollToIndex:)]) {
+        [self.delegate cycleScrollView:self willScrollToIndex:indexOnPageControl];
+    } else if (self.itemWillScrollOperationBlock) {
+        self.itemWillScrollOperationBlock(indexOnPageControl);
+    }
+}
 - (void)makeScrollViewScrollToIndex:(NSInteger)index{
     if (self.autoScroll) {
         [self invalidateTimer];

@@ -58,6 +58,8 @@ typedef enum {
 /** 图片滚动回调 */
 - (void)cycleScrollView:(SDCycleScrollView *)cycleScrollView didScrollToIndex:(NSInteger)index;
 
+/** 图片滚动回调 */
+- (void)cycleScrollView:(SDCycleScrollView *)cycleScrollView willScrollToIndex:(NSInteger)index;
 
 
 
@@ -130,6 +132,9 @@ typedef enum {
 
 /** block方式监听滚动 */
 @property (nonatomic, copy) void (^itemDidScrollOperationBlock)(NSInteger currentIndex);
+
+/** block方式监听滚动 */
+@property (nonatomic, copy) void (^itemWillScrollOperationBlock)(NSInteger currentIndex);
 
 /** 可以调用此方法手动控制滚动到哪一个index */
 - (void)makeScrollViewScrollToIndex:(NSInteger)index;
